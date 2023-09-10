@@ -100,6 +100,54 @@ console.log(hadd.getOutputValues());
 hadd.setInputValues([1,1]);
 console.log(hadd.getOutputValues());
 
+class AddCarry extends CompositeGate{
+    constructor(){
+        super(3,2,[...arguments]);
+        let [i1,i2,i3] = this.mappedInputs;
+        let xor12 = new Xor(i1,i2).output;
+        let p1 = new Xor(xor12,i3).output;
+        let p2 = new Or(new And(i1,i2).output,new And(xor12,i3).output).output;
+        this.mappedOutputs[0].connect(p2);
+        this.mappedOutputs[1].connect(p1);
+    }
+}
+
+const intToBits = function(n){
+    let arr = [];
+    for(let i = 31; i >= 0; i--){
+        arr.push((n>>>i)&1);
+    }
+    return arr;
+}
+
+const ac = new AddCarry;
+
+console.log("Adder component");
+for(let i = 0; i < 8; i++){
+    const input = intToBits(i).slice(-3);
+    ac.setInputValues(input);
+    console.log(input,ac.getOutputValues());
+}
+
+
+class Add32 extends CompositeGate{
+    constructor(){
+        super(64,32,[...arguments]);
+        let inputs = this.mappedInputs;
+        let a2 = new HADD(inputs[31],inputs[63]);
+        let carry = a2.outputs[0];
+        this.mappedOutputs[31].connect(a2.outputs[1]);
+        for(let i = 30; i >= 0; i--){
+            let a3 = new AddCarry(inputs[i],inputs[i+32],carry);
+            carry = a3.outputs[0];
+            this.mappedOutputs[i].connect(a3.outputs[1]);
+        }
+    }
+}
+
+let add32 = new Add32;
+add32.setInputValues([...intToBits(114514),...intToBits(1919)]);
+console.log(parseInt(add32.getOutputValues().join(""),2),114514+1919,add32.getOutputValues());
 
 // //simulate half adder
 // const inputs = [new Vout, new Vout];
