@@ -145,9 +145,90 @@ class Add32 extends CompositeGate{
     }
 }
 
-let add32 = new Add32;
+
+
+
+class AddN extends CompositeGate{
+    constructor(n,...args){
+        super(n*2,n,args);
+        let inputs = this.mappedInputs;
+        let a2 = new HADD(inputs[n-1],inputs[n*2-1]);
+        let carry = a2.outputs[0];
+        this.mappedOutputs[n-1].connect(a2.outputs[1]);
+        for(let i = n-2; i >= 0; i--){
+            let a3 = new AddCarry(inputs[i],inputs[i+n],carry);
+            carry = a3.outputs[0];
+            this.mappedOutputs[i].connect(a3.outputs[1]);
+        }
+    }
+}
+
+let add32 = new AddN(32);
 add32.setInputValues([...intToBits(114514),...intToBits(1919)]);
 console.log(parseInt(add32.getOutputValues().join(""),2),114514+1919,add32.getOutputValues());
+
+
+class BitsAndN extends CompositeGate{
+    constructor(n,...args){
+        super(n+1,n,args);
+        let inputs = this.mappedInputs.slice(0,n);
+        let flag = this.mappedInputs[n];
+        for(let i = 0; i < inputs.length; i++){
+            this.mappedOutputs[i].connect(new And(inputs[i],flag).output);
+        }
+    }
+}
+
+class MulN extends CompositeGate{
+    /*
+    // old constructor based on little endian internal calculation
+    constructor(n,...args){
+        super(n*2,n,args);
+        let inputs = this.mappedInputs;
+        let digits1 = inputs.slice(0,n).reverse();
+        let digits2 = inputs.slice(n).reverse();//least significant digit first
+        let acc = new BitsAndN(n,...digits1,digits2[0]).outputs;
+        let res = [];
+        res.push(acc[0]);
+        acc = acc.slice(1);
+        for(let i = 1; i < n; i++){
+            let k = n-i;
+            let filteredDigits = new BitsAndN(k,...digits1.slice(0,k),digits2[i]).outputs;
+            console.log(acc.length,filteredDigits.length);
+            acc = new AddN(k,...acc.reverse(),...filteredDigits.reverse()).outputs.reverse();
+            res.push(acc[0]);
+            acc = acc.slice(1);
+        }
+        res = res.reverse();
+        for(let i = 0; i < n; i++){
+            this.mappedOutputs[i].connect(res[i]);
+        }
+    }*/
+    constructor(n,...args){
+        super(n*2,n,args);
+        let inputs = this.mappedInputs;
+        let digits1 = inputs.slice(0,n);
+        let digits2 = inputs.slice(n);
+        let acc = new BitsAndN(n,...digits1,digits2[n-1]).outputs;
+        let res = [];
+        res[n-1] = acc.pop();
+        for(let k = n-1; k > 0; k--){
+            console.log(k);
+            let filteredDigits = new BitsAndN(k,...digits1.slice(-k),digits2[k-1]).outputs;
+            acc = new AddN(k,...acc,...filteredDigits).outputs;
+            res[k-1] = acc.pop();
+        }
+        for(let i = 0; i < n; i++){
+            this.mappedOutputs[i].connect(res[i]);
+        }
+    }
+}
+
+let mul32 = new MulN(32);
+mul32.setInputValues([...intToBits(114514),...intToBits(1919)]);
+console.log(parseInt(mul32.getOutputValues().join(""),2),114514*1919,mul32.getOutputValues());
+console.log((114514*1919).toString(2));
+
 
 // //simulate half adder
 // const inputs = [new Vout, new Vout];
