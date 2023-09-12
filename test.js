@@ -180,30 +180,6 @@ class BitsAndN extends CompositeGate{
 }
 
 class MulN extends CompositeGate{
-    /*
-    // old constructor based on little endian internal calculation
-    constructor(n,...args){
-        super(n*2,n,args);
-        let inputs = this.mappedInputs;
-        let digits1 = inputs.slice(0,n).reverse();
-        let digits2 = inputs.slice(n).reverse();//least significant digit first
-        let acc = new BitsAndN(n,...digits1,digits2[0]).outputs;
-        let res = [];
-        res.push(acc[0]);
-        acc = acc.slice(1);
-        for(let i = 1; i < n; i++){
-            let k = n-i;
-            let filteredDigits = new BitsAndN(k,...digits1.slice(0,k),digits2[i]).outputs;
-            console.log(acc.length,filteredDigits.length);
-            acc = new AddN(k,...acc.reverse(),...filteredDigits.reverse()).outputs.reverse();
-            res.push(acc[0]);
-            acc = acc.slice(1);
-        }
-        res = res.reverse();
-        for(let i = 0; i < n; i++){
-            this.mappedOutputs[i].connect(res[i]);
-        }
-    }*/
     constructor(n,...args){
         super(n*2,n,args);
         let inputs = this.mappedInputs;
@@ -230,29 +206,6 @@ console.log(parseInt(mul32.getOutputValues().join(""),2),114514*1919,mul32.getOu
 console.log((114514*1919).toString(2));
 
 
-// //simulate half adder
-// const inputs = [new Vout, new Vout];
-// const outputs = [new Vin, new Vin];
-// 
-// const and = new And(inputs[0],inputs[1]);
-// And.output.connect(outputs[1]);
-
-
-
-// let xor = new XorTest;
-// let s1 = new Vout;
-// let s2 = new Vout;
-// s1.connect(xor.inputs[0]);
-// s2.connect(xor.inputs[1]);
-// 
-// s1.log(v=>`value ${v} at source 1`);
-// s2.log(v=>`value ${v} at source 2`);
-// 
-// console.log("Simulating XOR");
-// 
-// s1.value = 1;
-// s2.value = 0;
-// console.log(xor.output.value);
 
 
 
