@@ -135,6 +135,19 @@ export class CompositeGate extends Gate{
     }
 }
 
+
+class ConstantVoltage extends Vout{
+    constructor(val){
+        this._value = val;
+    }
+    set value(){
+        throw new Error("Trying to set a value for a constant voltage output");
+    }
+}
+
+export const High = new ConstantVoltage(1);
+export const Low = new ConstantVoltage(0);
+
 export class Not extends Gate{
     constructor(vout){
         super();
