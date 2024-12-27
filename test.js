@@ -206,6 +206,28 @@ console.log(parseInt(mul32.getOutputValues().join(""),2),114514*1919,mul32.getOu
 console.log((114514*1919).toString(2));
 
 
+class Float{
+    constructor(arr){
+        this.sign = arr[0];
+        this.exp = arr.slice(1,9);
+        this.frac = arr.slice(9);
+    }
+}
+
+class IEEE754_mul32{
+    constructor(...args){
+        super(64,32,args);
+        let inputs = this.mappedInputs;
+        let float1 = new Float(inputs.slice(0,n));
+        let float2 = new Float(inputs.slice(n));
+        let result = [];
+        result[0] = new Xor(float1.sign,float2.sign).output;
+        //add the exponent part
+
+
+
+    }
+}
 
 
 
